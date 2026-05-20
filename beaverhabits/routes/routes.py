@@ -30,7 +30,10 @@ from beaverhabits.frontend.components import (
 from beaverhabits.frontend.export_page import export_page
 from beaverhabits.frontend.habit_page import habit_page_ui
 from beaverhabits.frontend.import_page import import_ui_page
-from beaverhabits.frontend.index_page import index_page_ui
+from beaverhabits.frontend.index_page import (
+    index_page_ui,
+    refresh_habit_list_when_today_changes,
+)
 from beaverhabits.frontend.layout import custom_headers, redirect
 from beaverhabits.frontend.chip_sets_page import chip_sets_page
 from beaverhabits.frontend.order_page import order_page_ui
@@ -52,6 +55,7 @@ async def demo_index_page() -> None:
     days = await dummy_days(settings.INDEX_HABIT_DATE_COLUMNS)
     habit_list = views.get_or_create_session_habit_list(days)
     index_page_ui(days, habit_list)
+    refresh_habit_list_when_today_changes(days, habit_list)
 
     # Google One Tap Login
     google_one_tap_login()
@@ -122,6 +126,7 @@ async def index_page(
     days = await dummy_days(settings.INDEX_HABIT_DATE_COLUMNS)
     habit_list = await views.get_user_habit_list(user)
     index_page_ui(days, habit_list)
+    refresh_habit_list_when_today_changes(days, habit_list)
 
     await views.set_user_cookies(user)
 

@@ -155,7 +155,6 @@ def index_page_ui(days: list[datetime.date], habits: HabitList):
             ui.label("List is empty.").classes("mx-auto w-80")
             return
         habit_list_ui(days, active_habits)
-        refresh_habit_list_when_today_changes(days, habits)
 
     # placeholder to preload js cache (daily notes)
     textarea.Textarea("").classes("hidden").props('aria-hidden="true"')
