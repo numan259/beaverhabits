@@ -3,6 +3,7 @@ from typing import List
 
 from nicegui import ui
 
+from beaverhabits import utils
 from beaverhabits.configs import settings
 from beaverhabits.core.completions import get_habit_date_completion
 from beaverhabits.frontend import javascript, textarea
@@ -117,9 +118,32 @@ def habit_list_ui(days: list[datetime.date], active_habits: List[Habit]):
             ui.space()
 
 
+def get_active_habits(habits: HabitList) -> List[Habit]:
+    return HabitListBuilder(habits).status(HabitStatus.ACTIVE).build()
+
+
+def refresh_habit_list_when_today_changes(
+    days: list[datetime.date], habits: HabitList
+) -> None:
+    rendered_today = max(days)
+
+    async def refresh_if_needed() -> None:
+        nonlocal rendered_today
+        today = await utils.get_user_today_date()
+        if today == rendered_today:
+            return
+        rendered_today = today
+        new_days = await utils.dummy_days(settings.INDEX_HABIT_DATE_COLUMNS)
+        if settings.INDEX_HABIT_DATE_REVERSE:
+            new_days = list(reversed(new_days))
+        habit_list_ui.refresh(new_days, get_active_habits(habits))
+
+    ui.timer(60, refresh_if_needed, immediate=False)
+
+
 @ui.refreshable
 def index_page_ui(days: list[datetime.date], habits: HabitList):
-    active_habits = HabitListBuilder(habits).status(HabitStatus.ACTIVE).build()
+    active_habits = get_active_habits(habits)
     if settings.INDEX_HABIT_DATE_REVERSE:
         days = list(reversed(days))
 
@@ -131,6 +155,7 @@ def index_page_ui(days: list[datetime.date], habits: HabitList):
             ui.label("List is empty.").classes("mx-auto w-80")
             return
         habit_list_ui(days, active_habits)
+        refresh_habit_list_when_today_changes(days, habits)
 
     # placeholder to preload js cache (daily notes)
     textarea.Textarea("").classes("hidden").props('aria-hidden="true"')
