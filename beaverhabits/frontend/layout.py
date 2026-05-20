@@ -157,7 +157,7 @@ def menu_component():
 
         with menu_icon_item("Tools", auto_close=False).classes("pr-1"):
             with ui.item_section().props("side").classes("pl-[1px]"):
-                ui.icon("keyboard_arrow_right")
+                ui.icon(icons.CHEVRON_RIGHT)
             with ui.menu().props('anchor="top end" self="top start" auto-close'):
                 # Stats for all habtis
                 menu_icon_item("Reorder", lambda: redirect("order"))
