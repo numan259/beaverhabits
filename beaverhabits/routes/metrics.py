@@ -24,14 +24,7 @@ except ImportError:
 router = APIRouter()
 
 
-@router.get(
-    "/health",
-    tags=["healthcheck"],
-    summary="Perform a Health Check",
-    response_description="Return HTTP Status Code 200 (OK)",
-    status_code=status.HTTP_200_OK,
-)
-async def health():
+def health_payload():
     loop = asyncio.get_event_loop()
     return dict(
         status="OK",
@@ -40,6 +33,27 @@ async def health():
         identity=IDENTITY,
         nicegui_version=nicegui.__version__,
     )
+
+
+@router.get(
+    "/health",
+    tags=["healthcheck"],
+    summary="Perform a Health Check",
+    response_description="Return HTTP Status Code 200 (OK)",
+    status_code=status.HTTP_200_OK,
+)
+async def health():
+    return health_payload()
+
+
+@router.head(
+    "/health",
+    tags=["healthcheck"],
+    summary="Perform a Health Check without a response body",
+    status_code=status.HTTP_200_OK,
+)
+def health_head():
+    return Response(status_code=status.HTTP_200_OK)
 
 
 METRICS_TEMPLATE = """\
