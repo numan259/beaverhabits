@@ -20,6 +20,13 @@ def streak_card(habit: Habit, today: datetime.date, weeks: int):
     target = get_habit_heatmap_path(habit)
     with card(width=None):
         card_title(habit.name, target)
+
+        # --- Habit analytics: longest streak + completion rate ---
+        with ui.row().classes("items-center gap-4 text-sm opacity-80"):
+            ui.label(f"🔥 Longest streak: {habit.longest_streak()} days")
+            ui.label(f"✓ Completion rate: {habit.completion_rate()}%")
+            ui.label(f"Σ Total: {habit.ticked_count()}")
+
         ui.space().classes("h-1")
         habit_calendar = CalendarHeatmap.build(today, weeks, calendar.MONDAY)
         habit_heat_map(habit, habit_calendar, readonly=True)

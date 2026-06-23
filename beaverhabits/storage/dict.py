@@ -182,6 +182,36 @@ class DictHabit(Habit[DictRecord], DictStorage):
 
         return sum(1 for day in self.ticked_days if start <= day <= end)
 
+    def longest_streak(self) -> int:
+        """Length of the longest run of consecutive ticked days."""
+        if not self.ticked_days:
+            return 0
+        days = sorted(set(self.ticked_days))
+        longest = current = 1
+        for prev, curr in zip(days, days[1:]):
+            if (curr - prev).days == 1:
+                current += 1
+                longest = max(longest, current)
+            else:
+                current = 1
+        return longest
+
+    def completion_rate(
+        self, start: datetime.date | None = None, end: datetime.date | None = None
+    ) -> float:
+        """Percentage of days ticked between the first tick and today."""
+        if not self.ticked_days:
+            return 0.0
+        if start is None:
+            start = min(self.ticked_days)
+        if end is None:
+            end = datetime.date.today()
+        total_days = (end - start).days + 1
+        if total_days <= 0:
+            return 0.0
+        done = self.ticked_count(start, end)
+        return round(done / total_days * 100, 1)
+    
     @property
     def ticked_data(self) -> dict[datetime.date, DictRecord]:
         return self.cache.ticked_data

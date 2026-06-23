@@ -187,7 +187,19 @@ async def get_habit_completions(
         ticked_days = ticked_days[:limit]
 
     return [x.strftime(date_fmt) for x in ticked_days]
-
+@api_router.get("/habits/{habit_id}/stats", tags=["habits"])
+async def get_habit_stats(
+    habit_id: str,
+    user: User = Depends(current_active_user),
+):
+    habit = await views.get_user_habit(user, habit_id)
+    return {
+        "id": habit.id,
+        "name": habit.name,
+        "longest_streak": habit.longest_streak(),
+        "completion_rate": habit.completion_rate(),
+        "total_ticked": habit.ticked_count(),
+    }
 
 class Tick(BaseModel):
     done: bool
