@@ -76,3 +76,41 @@ async def test_user_disk(user: User, habit_user: HabitUser):
     await user.open("/")
     # close db connection after test
     await engine.dispose()
+
+# --- Tests for habit analytics (longest streak + completion rate) ---
+import datetime
+from beaverhabits.storage.dict import DictHabit
+
+
+def _make_habit(days: list[datetime.date]) -> DictHabit:
+    """Build a minimal habit ticked on the given days."""
+    records = [{"day": d.strftime("%Y-%m-%d"), "done": True} for d in days]
+    return DictHabit({"name": "Test Habit", "records": records}, None)
+
+
+def test_longest_streak_consecutive():
+    days = [datetime.date(2024, 1, 1), datetime.date(2024, 1, 2), datetime.date(2024, 1, 3)]
+    assert _make_habit(days).longest_streak() == 3
+
+
+def test_longest_streak_resets_on_gap():
+    # Two in a row, a gap, then one more -> longest run is 2
+    days = [datetime.date(2024, 1, 1), datetime.date(2024, 1, 2), datetime.date(2024, 1, 4)]
+    assert _make_habit(days).longest_streak() == 2
+
+
+def test_longest_streak_empty():
+    assert _make_habit([]).longest_streak() == 0
+
+
+def test_completion_rate():
+    # 3 ticked days across a 4-day window -> 75.0%
+    days = [datetime.date(2024, 1, 1), datetime.date(2024, 1, 2), datetime.date(2024, 1, 3)]
+    rate = _make_habit(days).completion_rate(
+        start=datetime.date(2024, 1, 1), end=datetime.date(2024, 1, 4)
+    )
+    assert rate == 75.0
+
+
+def test_completion_rate_empty():
+    assert _make_habit([]).completion_rate() == 0.0
